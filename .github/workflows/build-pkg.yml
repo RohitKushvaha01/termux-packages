@@ -25,15 +25,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup environment
-        run: |
-          chmod +x scripts/setup-ubuntu.sh
-          ./scripts/setup-ubuntu.sh
-
       - name: Run build-package script
         run: |
           chmod +x ./build-package.sh
-          ./build-package.sh ${{ matrix.arch }} ${{ github.event.inputs.packages }}
+          ./build-package.sh -a ${{ matrix.arch }} ${{ github.event.inputs.packages }}
         
       - name: Upload artifacts
         if: success()
