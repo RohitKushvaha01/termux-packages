@@ -33,7 +33,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
-            my-build-image ./scripts/build-package.sh -a ${{ matrix.arch }} ${{ github.event.inputs.packages }}
+            my-build-image ./scripts/run-docker.sh ./scripts/build-package.sh -a ${{ matrix.arch }} ${{ github.event.inputs.packages }}
 
       - name: Upload artifacts
         if: success()
