@@ -24,16 +24,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Docker image
-        run: |
-          docker build -t my-build-image ./scripts
-
-      - name: Run build-package script inside Docker container
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/workspace \
-            -w /workspace \
-            my-build-image ./scripts/run-docker.sh ./scripts/build-package.sh -a ${{ matrix.arch }} ${{ github.event.inputs.packages }}
+      - name: Run build-package
+        run: ./scripts/run-docker.sh ./scripts/build-package.sh -a ${{ matrix.arch }} ${{ github.event.inputs.packages }}
 
       - name: Upload artifacts
         if: success()
