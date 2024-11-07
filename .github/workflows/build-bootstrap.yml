@@ -1,0 +1,29 @@
+name: Build and Upload Packages
+
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    timeout-minutes: 480
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+          - aarch64
+          - arm
+          - i686
+          - x86_64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run build-package
+        run: ./scripts/run-docker.sh ./scripts/build-bootstraps.sh --architectures ${{ matrix.arch }}
+
+      - name: Upload artifacts
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: output-${{ matrix.arch }}
+          path: output/
