@@ -1,5 +1,3 @@
-# .github/workflows/build-packages.yml
-
 name: Build and Upload Packages
 
 on:
@@ -25,11 +23,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Run build-package script
+      - name: Set up Docker
         run: |
-          chmod +x ./build-package.sh
-          ./build-package.sh -a ${{ matrix.arch }} ${{ github.event.inputs.packages }}
-        
+          docker build -t my-build-image ./scripts
+
+      - name: Run build-package script inside Docker container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            my-build-image ./scripts/build-package.sh -a ${{ matrix.arch }} ${{ github.event.inputs.packages }}
+
       - name: Upload artifacts
         if: success()
         uses: actions/upload-artifact@v3
