@@ -24,9 +24,7 @@ jobs:
           path: output.tar.gz
           key: output-${{ matrix.arch }}
           restore-keys: |
-            build-${{ matrix.arch }}-
-            build-${{ matrix.arch }}
-            build-
+            output-${{ matrix.arch }}
 
       - name: Extract output directory if cached
         if: steps.cache-output.outputs.cache-hit == 'true'
