@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       packages:
-        description: "Space-separated list of packages to build"
+        description: 'Space-separated list of packages to build'
         required: true
-        default: "PACKAGE_1 PACKAGE_2"
+        default: 'PACKAGE_1 PACKAGE_2'
 
 jobs:
   build:
