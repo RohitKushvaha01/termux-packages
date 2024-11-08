@@ -29,7 +29,7 @@ jobs:
         with:
           path: output
           key: output-${{ matrix.arch }}-${{ github.event.inputs.packages }}
-          restore-keys: 
+          restore-keys:
             - output-${{ matrix.arch }}
 
       - name: Log cache status
@@ -54,7 +54,9 @@ jobs:
           key: output-${{ matrix.arch }}-${{ github.event.inputs.packages }}
 
       - name: Archive output directory
-        run: tar -czvf output.tar.gz -C output .
+        run: |
+          echo "Archiving output directory..."
+          tar -czvf output.tar.gz -C output .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
