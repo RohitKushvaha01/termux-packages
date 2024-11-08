@@ -6,7 +6,7 @@ on:
       packages:
         description: 'Space-separated list of packages to build'
         required: true
-        default: 'PACKAGE_1 PACKAGE_2'
+        default: ''
 
 jobs:
   build:
@@ -18,7 +18,8 @@ jobs:
 
     steps:
       - name: Log input package
-        run: echo "Packages to build: ${{ github.event.inputs.packages }}"
+        run: |
+          echo "Packages to build: ${{ github.event.inputs.packages }}"
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -29,8 +30,6 @@ jobs:
         with:
           path: output
           key: output-${{ matrix.arch }}-${{ github.event.inputs.packages }}
-          restore-keys:
-            - output-${{ matrix.arch }}
 
       - name: Log cache status
         run: |
