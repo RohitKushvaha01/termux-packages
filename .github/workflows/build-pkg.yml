@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+    name: Build and Upload Packages - ${{ github.event.inputs.packages }}
     timeout-minutes: 480
     runs-on: ubuntu-latest
     strategy:
@@ -21,11 +22,41 @@ jobs:
           - x86_64
 
     steps:
+      - name: Log input packages
+        run: echo "Packages to build: ${{ github.event.inputs.packages }}"
+
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Restore output cache
+        uses: actions/cache@v3
+        id: cache-output
+        with:
+          path: output/
+          key: output-${{ matrix.arch }}-${{ github.event.inputs.packages }}
+          restore-keys: |
+            output-${{ matrix.arch }}-
+
+      - name: Log cache status
+        run: |
+          if [[ ${{ steps.cache-output.outputs.cache-hit }} == 'true' ]]; then
+            echo "Cache hit for output directory."
+          else
+            echo "No cache found, starting fresh."
+          fi
+
       - name: Run build-package
-        run: ./scripts/run-docker.sh ./build-package.sh -a ${{ matrix.arch }} ${{ github.event.inputs.packages }}
+        run: |
+          echo "Starting build for architecture: ${{ matrix.arch }}"
+          ./scripts/run-docker.sh ./build-package.sh -a ${{ matrix.arch }} ${{ github.event.inputs.packages }}
+          echo "Build completed for architecture: ${{ matrix.arch }}"
+
+      - name: Save output cache
+        if: success()
+        uses: actions/cache@v3
+        with:
+          path: output/
+          key: output-${{ matrix.arch }}-${{ github.event.inputs.packages }}
 
       - name: Upload artifacts
         if: success()
