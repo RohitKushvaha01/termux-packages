@@ -21,10 +21,10 @@ jobs:
         run: echo "Packages to build: ${{ github.event.inputs.packages }}"
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Restore output cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cache-output
         with:
           path: output
@@ -47,8 +47,8 @@ jobs:
           echo "Build completed for architecture: ${{ matrix.arch }}"
 
       - name: Save output cache
-        if: success()
-        uses: actions/cache@v2
+        if: ${{ success() }}
+        uses: actions/cache@v3
         with:
           path: output
           key: output-${{ matrix.arch }}-${{ github.event.inputs.packages }}
@@ -57,7 +57,7 @@ jobs:
         run: tar -czvf output.tar.gz -C output .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: output-archive
           path: output.tar.gz
