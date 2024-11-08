@@ -22,7 +22,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: output.tar.gz
-          key: build-${{ matrix.arch }}-${{ github.sha }}
+          key: output-${{ matrix.arch }}
           restore-keys: |
             build-${{ matrix.arch }}-
             build-${{ matrix.arch }}
@@ -51,7 +51,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: output.tar.gz
-          key: build-${{ matrix.arch }}-${{ github.sha }}
+          key: output-${{ matrix.arch }}
 
       # Upload artifacts (uncompressed for better accessibility)
       - name: Upload bootstrap archives
