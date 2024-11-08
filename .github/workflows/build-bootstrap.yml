@@ -1,8 +1,6 @@
 name: Build Bootstrap
-
 on:
   workflow_dispatch:
-
 jobs:
   build:
     timeout-minutes: 480
@@ -14,34 +12,48 @@ jobs:
           - arm
           - i686
           - x86_64
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Restore the backup of the output directory before the build
-      - name: Restore output directory cache
+      # Restore and extract the compressed output directory
+      - name: Restore cached output directory
+        id: cache-output
         uses: actions/cache@v3
         with:
-          path: output
-          key: build-${{ matrix.arch }}  # Simple cache key based on architecture
+          path: output.tar.gz
+          key: build-${{ matrix.arch }}-${{ github.sha }}
           restore-keys: |
+            build-${{ matrix.arch }}-
             build-${{ matrix.arch }}
             build-
+
+      - name: Extract output directory if cached
+        if: steps.cache-output.outputs.cache-hit == 'true'
+        run: |
+          tar xzf output.tar.gz
+          rm output.tar.gz
 
       # Run the build package
       - name: Run build-package
         run: ./scripts/run-docker.sh ./scripts/build-bootstraps.sh --architectures ${{ matrix.arch }}
 
-      # Backup the output directory after the build, even if it failed or was canceled
-      - name: Backup output directory (even if canceled or failed)
-        if: always()  # Ensures this runs even if the previous steps fail or the job is canceled
-        uses: actions/upload-artifact@v3
-        with:
-          name: bootstrap-archives-${{ matrix.arch }}
-          path: output
+      # Compress and cache the output directory
+      - name: Compress output directory
+        if: always()  # Run even if build fails
+        run: |
+          if [ -d "output" ]; then
+            tar czf output.tar.gz output/
+          fi
 
-      # Upload bootstrap archives (This is typically used for final result after build)
+      - name: Cache compressed output
+        if: always()  # Run even if build fails
+        uses: actions/cache@v3
+        with:
+          path: output.tar.gz
+          key: build-${{ matrix.arch }}-${{ github.sha }}
+
+      # Upload artifacts (uncompressed for better accessibility)
       - name: Upload bootstrap archives
         uses: actions/upload-artifact@v3
         with:
