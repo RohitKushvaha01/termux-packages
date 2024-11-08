@@ -33,9 +33,9 @@ jobs:
       - name: Run build-package
         run: ./scripts/run-docker.sh ./scripts/build-bootstraps.sh --architectures ${{ matrix.arch }}
 
-      # Backup the output directory after the build, even if it failed
-      - name: Backup output directory (even if failed)
-        if: always()  # Ensures this runs even if the previous steps fail
+      # Backup the output directory after the build, even if it failed or was canceled
+      - name: Backup output directory (even if canceled or failed)
+        if: always()  # Ensures this runs even if the previous steps fail or the job is canceled
         uses: actions/upload-artifact@v3
         with:
           name: bootstrap-archives-${{ matrix.arch }}
