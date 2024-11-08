@@ -10,7 +10,6 @@ on:
 
 jobs:
   build:
-    name: Build and Upload Packages - ${{ github.event.inputs.packages }}
     timeout-minutes: 480
     runs-on: ubuntu-latest
     strategy:
