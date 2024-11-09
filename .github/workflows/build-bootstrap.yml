@@ -1,4 +1,3 @@
-name: Build Bootstrap
 on:
   workflow_dispatch:
 jobs:
@@ -32,9 +31,11 @@ jobs:
           tar xzf output.tar.gz
           rm output.tar.gz
 
-      # Run the build package
+      # Run the build package with a timeout
       - name: Run build-package
-        run: ./scripts/run-docker.sh ./scripts/build-bootstraps.sh --architectures ${{ matrix.arch }}
+        run: |
+          timeout 2h30m ./scripts/run-docker.sh ./scripts/build-bootstraps.sh --architectures ${{ matrix.arch }}
+        shell: bash
 
       # Compress and cache the output directory
       - name: Compress output directory
