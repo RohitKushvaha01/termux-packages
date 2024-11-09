@@ -34,7 +34,7 @@ jobs:
       # Run the build package with a timeout
       - name: Run build-package
         run: |
-          timeout 2h30m ./scripts/run-docker.sh ./scripts/build-bootstraps.sh --architectures ${{ matrix.arch }}
+          timeout 150m ./scripts/run-docker.sh ./scripts/build-bootstraps.sh --architectures ${{ matrix.arch }}
         shell: bash
 
       # Compress and cache the output directory
