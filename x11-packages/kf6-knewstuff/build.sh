@@ -1,13 +1,12 @@
-TERMUX_PKG_HOMEPAGE='https://community.kde.org/Frameworks'
+TERMUX_PKG_HOMEPAGE='https://invent.kde.org/frameworks/knewstuff'
 TERMUX_PKG_DESCRIPTION='Support for downloading application assets from the network'
 TERMUX_PKG_LICENSE="LGPL-2.0, LGPL-3.0"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="6.20.0"
-_KF6_MINOR_VERSION="${TERMUX_PKG_VERSION%.*}"
-TERMUX_PKG_SRCURL=https://download.kde.org/stable/frameworks/${_KF6_MINOR_VERSION}/knewstuff-${TERMUX_PKG_VERSION}.tar.xz
-TERMUX_PKG_SHA256=49443add4f1caace2e64fe7dcbe4cf78cd6b692bf0c77ba01082c82761dfa2b9
-TERMUX_PKG_DEPENDS="kf6-attica (>= ${_KF6_MINOR_VERSION}), kf6-karchive (>= ${_KF6_MINOR_VERSION}), kf6-kconfig (>= ${_KF6_MINOR_VERSION}), kf6-kcoreaddons (>= ${_KF6_MINOR_VERSION}), kf6-ki18n (>= ${_KF6_MINOR_VERSION}), kf6-kpackage (>= ${_KF6_MINOR_VERSION}), kf6-kwidgetsaddons (>= ${_KF6_MINOR_VERSION}), kf6-syndication (>= ${_KF6_MINOR_VERSION}), libc++, qt6-qtbase, qt6-qtdeclarative"
-TERMUX_PKG_BUILD_DEPENDS="extra-cmake-modules (>= ${_KF6_MINOR_VERSION}), kf6-kirigami (>= ${_KF6_MINOR_VERSION}), qt6-qttools"
+TERMUX_PKG_VERSION="6.22.0"
+TERMUX_PKG_SRCURL="https://download.kde.org/stable/frameworks/${TERMUX_PKG_VERSION%.*}/knewstuff-${TERMUX_PKG_VERSION}.tar.xz"
+TERMUX_PKG_SHA256=1f6d4e72d8b66ee93eec8268fadb0d1731716f6a82cb2e46f1ef955c4ef6b1b5
+TERMUX_PKG_DEPENDS="kf6-attica (>= ${TERMUX_PKG_VERSION%.*}), kf6-karchive (>= ${TERMUX_PKG_VERSION%.*}), kf6-kconfig (>= ${TERMUX_PKG_VERSION%.*}), kf6-kcoreaddons (>= ${TERMUX_PKG_VERSION%.*}), kf6-ki18n (>= ${TERMUX_PKG_VERSION%.*}), kf6-kpackage (>= ${TERMUX_PKG_VERSION%.*}), kf6-kwidgetsaddons (>= ${TERMUX_PKG_VERSION%.*}), kf6-syndication (>= ${TERMUX_PKG_VERSION%.*}), libc++, qt6-qtbase, qt6-qtdeclarative"
+TERMUX_PKG_BUILD_DEPENDS="extra-cmake-modules (>= ${TERMUX_PKG_VERSION%.*}), kf6-kirigami (>= ${TERMUX_PKG_VERSION%.*}), qt6-qttools"
 TERMUX_PKG_RECOMMENDS="kf6-kirigami"
 TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="

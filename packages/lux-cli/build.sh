@@ -2,9 +2,9 @@ TERMUX_PKG_HOMEPAGE=https://nvim-neorocks.github.io/
 TERMUX_PKG_DESCRIPTION="A package manager for Lua, similar to luarocks"
 TERMUX_PKG_LICENSE="LGPL-3.0-or-later"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="0.22.0"
+TERMUX_PKG_VERSION="0.24.0"
 TERMUX_PKG_SRCURL="https://github.com/nvim-neorocks/lux/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz"
-TERMUX_PKG_SHA256=07407bc063f4bc60f93a4e6f3d342334910343064d71da0da34aa2d3378d9f7c
+TERMUX_PKG_SHA256=39d00fff7b626ca0dcce2f872d86d1fcffcb845343a01d91d2610c2ef3448873
 TERMUX_PKG_DEPENDS="bzip2, gpgme, libgit2, libgpg-error, lua54, openssl, xz-utils"
 TERMUX_PKG_PROVIDES="lx"
 TERMUX_PKG_AUTO_UPDATE=true
@@ -43,68 +43,30 @@ termux_pkg_auto_update() {
 	termux_pkg_upgrade_version "${newest_tag}"
 }
 
-# Function to obtain the .deb URL
-obtain_deb_url() {
-	local url attempt retries wait PAGE deb_url
-	url="https://packages.ubuntu.com/noble/amd64/$1/download"
-	retries=50
-	wait=50
-
-	for ((attempt=1; attempt<=retries; attempt++)); do
-		PAGE="$(curl -s "$url")"
-		>&2 echo page
-		>&2 echo "$PAGE"
-		deb_url="$(grep -oE 'https?://.*\.deb' <<< "$PAGE" | head -n1)"
-		if [[ -n "$deb_url" ]]; then
-				echo "$deb_url"
-				return 0
-		else
-			>&2 echo "Attempt $attempt: Failed to obtain URL. Retrying in $wait seconds..."
-		fi
-		sleep "$wait"
-	done
-
-	termux_error_exit "Failed to obtain URL after $retries attempts."
-}
-
 termux_step_host_build() {
 	if [[ "$TERMUX_ON_DEVICE_BUILD" == "true" ]]; then
 		return
 	fi
-	# install Ubuntu packages, like in the aosp-libs build.sh, to get gpgme for rust-hostbuilding
-	mkdir -p "${TERMUX_PKG_HOSTBUILD_DIR}/ubuntu_packages"
 
-	local URL DEB_NAME DEB_LIST
-
-	DEB_LIST=""
 	# libgpgme-dev and any dependencies that aren't in the ubuntu builder at time of writing
-	DEB_LIST+=" dirmngr"
-	DEB_LIST+=" gnupg"
-	DEB_LIST+=" gnupg-l10n"
-	DEB_LIST+=" gnupg-utils"
-	DEB_LIST+=" gpg"
-	DEB_LIST+=" gpg-agent"
-	DEB_LIST+=" gpg-wks-client"
-	DEB_LIST+=" gpgconf"
-	DEB_LIST+=" gpgsm"
-	DEB_LIST+=" gpgv"
-	DEB_LIST+=" keyboxd"
-	DEB_LIST+=" libassuan-dev"
-	DEB_LIST+=" libgpgme-dev"
-	DEB_LIST+=" libgpgme11t64"
+	local -a ubuntu_packages=(
+		"dirmngr"
+		"gnupg"
+		"gnupg-l10n"
+		"gnupg-utils"
+		"gpg"
+		"gpg-agent"
+		"gpg-wks-client"
+		"gpgconf"
+		"gpgsm"
+		"gpgv"
+		"keyboxd"
+		"libassuan-dev"
+		"libgpgme-dev"
+		"libgpgme11t64"
+	)
 
-	for i in $DEB_LIST; do
-		echo "deb: $i"
-		URL="$(obtain_deb_url "$i")"
-		DEB_NAME="${URL##*/}"
-		echo "$URL"
-		termux_download "$URL" "${TERMUX_PKG_CACHEDIR}/${DEB_NAME}" SKIP_CHECKSUM
-
-		mkdir -p "${TERMUX_PKG_TMPDIR}/${DEB_NAME}"
-		ar x "${TERMUX_PKG_CACHEDIR}/${DEB_NAME}" --output="${TERMUX_PKG_TMPDIR}/${DEB_NAME}"
-		tar xf "${TERMUX_PKG_TMPDIR}/${DEB_NAME}/data.tar.zst" \
-			-C "${TERMUX_PKG_HOSTBUILD_DIR}/ubuntu_packages"
-	done
+	termux_download_ubuntu_packages "${ubuntu_packages[@]}"
 
 	PKG_CONFIG_PATH_x86_64_unknown_linux_gnu="${TERMUX_PKG_HOSTBUILD_DIR}/ubuntu_packages/usr/lib/x86_64-linux-gnu/pkgconfig"
 	RUSTFLAGS="-L${TERMUX_PKG_HOSTBUILD_DIR}/ubuntu_packages/usr/lib/x86_64-linux-gnu"

@@ -2,19 +2,18 @@ TERMUX_PKG_HOMEPAGE=https://luarocks.org/
 TERMUX_PKG_DESCRIPTION="Deployment and management system for Lua modules"
 TERMUX_PKG_LICENSE="MIT"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="3.12.2"
-TERMUX_PKG_REVISION=3
+TERMUX_PKG_VERSION="3.13.0"
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://luarocks.org/releases/luarocks-${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=b0e0c85205841ddd7be485f53d6125766d18a81d226588d2366931e9a1484492
+TERMUX_PKG_SHA256=245bf6ec560c042cb8948e3d661189292587c5949104677f1eecddc54dbe7e37
 TERMUX_PKG_AUTO_UPDATE=true
-__LUA_VERSION=5.4 # Lua version against which it will be built.
 # Do not use varible here since buildorder.py do not evaluate bash before reading.
 TERMUX_PKG_DEPENDS="curl, lua54"
-TERMUX_PKG_BUILD_DEPENDS="liblua54"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_PLATFORM_INDEPENDENT=true
 
 termux_step_configure() {
+	declare -g __LUA_VERSION=5.4 # Lua version against which it will be built.
 	if [ "$TERMUX_ON_DEVICE_BUILD" != true ]; then
 		# Create temporary symlink to workaround luarock bootstrap
 		# script trying to run cross-compiled lua

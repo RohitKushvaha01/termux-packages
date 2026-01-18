@@ -3,10 +3,10 @@ TERMUX_PKG_DESCRIPTION="A lightweight, high-performance, and extensible WebAssem
 TERMUX_PKG_LICENSE="Apache-2.0"
 TERMUX_PKG_LICENSE_FILE="LICENSE, LICENSE.spdx"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="0.15.0"
+TERMUX_PKG_VERSION="0.16.1"
 # Use source tarball from release assets to get VERSION file for proper version number
 TERMUX_PKG_SRCURL=https://github.com/WasmEdge/WasmEdge/releases/download/${TERMUX_PKG_VERSION}/WasmEdge-${TERMUX_PKG_VERSION}-src.tar.gz
-TERMUX_PKG_SHA256=17915c4d047bc7a02aca862f4852101ec8d35baab7b659593687ab8c84b00938
+TERMUX_PKG_SHA256=fc256b8be022eb0487549cc2119c57fd12ad402e4130a05263b7aa85e2df89b9
 TERMUX_PKG_DEPENDS="libc++, libspdlog"
 TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
@@ -23,6 +23,13 @@ termux_step_pre_configure() {
 		CXXFLAGS+=" -malign-double"
 		;;
 	esac
+
+	# upstream has explicitly stated that it's OK to disable this error
+	# in order to force the build with LLVM 21 to complete successfully
+	# error: 'is_class' cannot be specialized:
+	# Users are not allowed to specialize this standard library entity
+	# https://github.com/WasmEdge/WasmEdge/issues/4071#issuecomment-2763100292
+	export CXXFLAGS+=" -Wno-invalid-specialization"
 }
 
 # wasmedge does not support LLVM 17 yet

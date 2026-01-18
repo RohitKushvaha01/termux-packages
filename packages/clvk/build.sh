@@ -2,10 +2,10 @@ TERMUX_PKG_HOMEPAGE=https://github.com/kpet/clvk
 TERMUX_PKG_DESCRIPTION="Experimental implementation of OpenCL on Vulkan"
 TERMUX_PKG_LICENSE="Apache-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
-_COMMIT=cc3a359b87ecf02cb38e741949cec1a32cd6a0bf
-_COMMIT_DATE=20251107
-_COMMIT_TIME=020807
-TERMUX_PKG_VERSION="0.0.20251107.020807"
+_COMMIT=876c4cd6d5e0281786f196df32ebd92ab371c3c7
+_COMMIT_DATE=20260111
+_COMMIT_TIME=104700
+TERMUX_PKG_VERSION="0.0.20260111.104700"
 TERMUX_PKG_SRCURL=git+https://github.com/kpet/clvk
 TERMUX_PKG_GIT_BRANCH=main
 TERMUX_PKG_BUILD_DEPENDS="vulkan-headers, vulkan-loader-android"
@@ -76,6 +76,11 @@ termux_pkg_auto_update() {
 		ERROR: Upstream is older than current package version!
 		ERROR: Please report to upstream!
 		"
+	fi
+
+	if [[ "${BUILD_PACKAGES}" == "false" ]]; then
+		echo "INFO: package needs to be updated to ${latest_version}."
+		return
 	fi
 
 	sed \

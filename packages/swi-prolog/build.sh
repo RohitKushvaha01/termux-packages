@@ -2,9 +2,10 @@ TERMUX_PKG_HOMEPAGE=https://swi-prolog.org/
 TERMUX_PKG_DESCRIPTION="Most popular and complete prolog implementation"
 TERMUX_PKG_LICENSE="BSD 2-Clause"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="9.3.36"
+TERMUX_PKG_VERSION="10.1.1"
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://www.swi-prolog.org/download/devel/src/swipl-${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=7a7ed88e3380e176eb19d219e59fa7faaa10ff34b62227741d0aab58ec6b710f
+TERMUX_PKG_SHA256=4bbb31f684749bbe3af2e75d726e5453ea26a656d6b2b1299f5633d5f37af851
 TERMUX_PKG_DEPENDS="libandroid-execinfo, libarchive, libcrypt, libdb, libedit, libgmp, libyaml, ncurses, openssl, ossp-uuid, pcre2, python, unixodbc, zlib"
 TERMUX_PKG_FORCE_CMAKE=true
 TERMUX_PKG_HOSTBUILD=true
@@ -49,48 +50,42 @@ termux_pkg_auto_update() {
 	termux_pkg_upgrade_version "$version"
 }
 
-# Function to obtain the .deb URL
-obtain_deb_url() {
-	local url attempt retries wait PAGE deb_url
-	url="https://packages.ubuntu.com/noble/amd64/$1/download"
-	retries=50
-	wait=50
+# We do this to produce:
+# a native host build to produce
+# boot<nn>.prc, INDEX.pl, ssl cetificate tests,
+# SWIPL_NATIVE_FRIEND tells SWI-Prolog to use
+# this build for the artifacts needed to build the
+# Android version
+termux_step_host_build() {
+	# make build dependencies of hostbuild exactly match build dependencies of target build
+	# prevents possible errors that can otherwise occur
+	local -a ubuntu_packages=(
+		"libacl1-dev"
+		"libarchive-dev"
+		"libattr1-dev"
+		"libbsd-dev"
+		"libdb-dev"
+		"libdb5.3-dev"
+		"libedit-dev"
+		"libext2fs-dev"
+		"liblz4-dev"
+		"libmd-dev"
+		"libodbccr2"
+		"libodbcinst2"
+		"libossp-uuid-dev"
+		"libossp-uuid16"
+		"libpython3-dev"
+		"libpython3.12-dev"
+		"nettle-dev"
+		"python3-dev"
+		"python3.12-dev"
+		"unixodbc-common"
+		"unixodbc-dev"
+	)
 
-	>&2 echo "url: $url"
+	termux_download_ubuntu_packages "${ubuntu_packages[@]}"
 
-	for ((attempt=1; attempt<=retries; attempt++)); do
-		PAGE="$(curl -s "$url")"
-		deb_url="$(grep -oE 'https?://.*\.deb' <<< "$PAGE" | head -n1)"
-		if [[ -n "$deb_url" ]]; then
-				echo "$deb_url"
-				return 0
-		else
-			>&2 echo "Attempt $attempt: Failed to obtain deb URL. Retrying in $wait seconds..."
-		fi
-		sleep "$wait"
-	done
-
-	termux_error_exit "Failed to obtain URL after $retries attempts."
-}
-
-_install_ubuntu_packages() {
-	# install Ubuntu packages, like in the aosp-libs build.sh
-	export HOSTBUILD_ROOTFS="${TERMUX_PKG_HOSTBUILD_DIR}/ubuntu_packages"
-	mkdir -p "${HOSTBUILD_ROOTFS}"
-	local URL DEB_NAME DEB_LIST
-
-	DEB_LIST="$@"
-
-	for i in $DEB_LIST; do
-		echo "deb: $i"
-		URL="$(obtain_deb_url "$i")"
-		DEB_NAME="${URL##*/}"
-		termux_download "$URL" "${TERMUX_PKG_CACHEDIR}/${DEB_NAME}" SKIP_CHECKSUM
-		mkdir -p "${TERMUX_PKG_TMPDIR}/${DEB_NAME}"
-		ar x "${TERMUX_PKG_CACHEDIR}/${DEB_NAME}" --output="${TERMUX_PKG_TMPDIR}/${DEB_NAME}"
-		tar xf "${TERMUX_PKG_TMPDIR}/${DEB_NAME}/data.tar.zst" \
-			-C "${HOSTBUILD_ROOTFS}"
-	done
+	local HOSTBUILD_ROOTFS="${TERMUX_PKG_HOSTBUILD_DIR}/ubuntu_packages"
 
 	find "${HOSTBUILD_ROOTFS}" -type f -name '*.pc' | \
 		xargs -n 1 sed -i -e "s|/usr|${HOSTBUILD_ROOTFS}/usr|g"
@@ -113,38 +108,6 @@ _install_ubuntu_packages() {
 
 	# fixes: fatal error: x86_64-linux-gnu/python3.12/pyconfig.h: No such file or directory
 	CFLAGS+=" -I${HOSTBUILD_ROOTFS}/usr/include"
-}
-
-# We do this to produce:
-# a native host build to produce
-# boot<nn>.prc, INDEX.pl, ssl cetificate tests,
-# SWIPL_NATIVE_FRIEND tells SWI-Prolog to use
-# this build for the artifacts needed to build the
-# Android version
-termux_step_host_build() {
-	# make build dependencies of hostbuild exactly match build dependencies of target build
-	# prevents possible errors that can otherwise occur
-	_install_ubuntu_packages libacl1-dev \
-							libarchive-dev \
-							libattr1-dev \
-							libext2fs-dev \
-							liblz4-dev \
-							nettle-dev \
-							libpython3-dev \
-							libpython3.12-dev \
-							python3-dev \
-							python3.12-dev \
-							libbsd-dev \
-							libedit-dev \
-							libmd-dev \
-							libossp-uuid-dev \
-							libossp-uuid16 \
-							libdb-dev \
-							libdb5.3-dev \
-							libodbccr2 \
-							libodbcinst2 \
-							unixodbc-common \
-							unixodbc-dev
 
 	local HOSTBUILD_EXTRA_CONFIGURE_ARGS_32=""
 	if [[ "$TERMUX_ARCH_BITS" == "32" ]]; then

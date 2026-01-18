@@ -45,6 +45,7 @@ jobs:
         fetch-depth: 1000
     - name: Set process id limit for 32-bit builds depending on aosp-libs
       run: echo 65535 | sudo tee /proc/sys/kernel/pid_max
+
     - name: Gather build summary
       id: build-info
       env:
@@ -225,6 +226,15 @@ jobs:
           ./scripts/lint-packages.sh "${package_recipes[@]}"
         fi
 
+    - name: Enable zram
+      if: ${{ steps.build-info.outputs.skip-building != 'true' }}
+      uses: ./.github/actions/zram
+      with:
+        algorithm: zstd
+        size: 16G
+        priority: 100
+        device_name: /dev/zram0
+
     - name: Free additional disk space (if needed)
       if: ${{ steps.build-info.outputs.docker-build == 'false' && steps.build-info.outputs.skip-building != 'true' }}
       run: |
@@ -297,13 +307,13 @@ jobs:
         find debs -type f -name "*.deb" -exec sha256sum "{}" \; | sort -k2 | tee checksum-${{ matrix.target_arch }}-${{ github.sha }}.txt
     - name: Store checksums for built *.deb files
       if: always()
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: checksum-${{ matrix.target_arch }}-${{ github.sha }}
         path: checksum-${{ matrix.target_arch }}-${{ github.sha }}.txt
     - name: Store *.deb files
       if: always()
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: debs-${{ matrix.target_arch }}-${{ github.sha }}
         path: ./artifacts
@@ -311,7 +321,7 @@ jobs:
   test-buildorder-random:
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Clone repository
       uses: actions/checkout@v6
@@ -339,12 +349,12 @@ jobs:
       contents: read
     if: github.repository == 'termux/termux-packages' && github.ref != 'refs/heads/master'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Clone repository
       uses: actions/checkout@v6
     - name: Get *.deb files
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         path: ./
     - name: Check packages using Packages.bz2
@@ -406,12 +416,12 @@ jobs:
       contents: read
     if: github.repository == 'termux/termux-packages' && github.ref == 'refs/heads/master'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Clone repository
       uses: actions/checkout@v6
     - name: Get *.deb files
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         path: ./
     - name: Upload to packages.termux.dev

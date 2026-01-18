@@ -30,7 +30,7 @@ check_package_license() {
 			LPPL-1.0|Libpng|Lucent-1.02|MIT|MPL-2.0|MS-PL|MS-RL|MirOS|Motosoto-0.9.1);;
 			Mozilla-1.1|Multics|NASA-1.3|NAUMEN|NCSA|NOSL-3.0|NTP|NUnit-2.6.3);;
 			NUnit-Test-Adapter-2.6.3|Nethack|Nokia-1.0a|OCLC-2.0|OSL-3.0|OpenLDAP);;
-			OpenSSL|Openfont-1.1|Opengroup|PHP-3.0|PHP-3.01|PostgreSQL);;
+			OpenSSL|OFL-1.1|Opengroup|PHP-3.0|PHP-3.01|PostgreSQL);;
 			"Public Domain"|"Public Domain - SUN"|PythonPL|PythonSoftFoundation);;
 			QTPL-1.0|RPL-1.5|Real-1.0|RicohPL|SUNPublic-1.0|Scala|SimPL-2.0|Sleepycat);;
 			Sybase-1.0|TMate|UPL-1.0|Unicode-DFS-2015|Unlicense|UoI-NCSA|"VIM License");;
@@ -139,14 +139,21 @@ check_indentation() {
 	else
 		origin_url="unknown"
 	fi
-	base_commit="HEAD~$(git rev-list --count FETCH_HEAD.. -- || printf 1)"
+
+	base_commit="$(git rev-list "origin/master.." --exclude-first-parent-only --reverse | head -n1)"
+	# On the master branch or failure `git rev-list "origin/master.."`
+	# won't return a commit, so set "HEAD" as a default value.
+	: "${base_commit:="HEAD"}"
 } 2> /dev/null
 
 # Also figure out if we have a `%ci:no-build` trailer in the commit range,
 # we may skip some checks later if yes.
-no_build="$(git log --fixed-strings --grep '%ci:no-build' --pretty=format:%H "$base_commit")"
+no_build="$(git log --fixed-strings --grep '%ci:no-build' --pretty=format:%H "$base_commit..")"
 
 check_version() {
+	# !!! vvv TEMPORARY - REMOVE WHEN THIS FUNCTION IS FIXED vvv !!!
+	return
+	# !!! ^^^ TEMPORARY - REMOVE WHEN THIS FUNCTION IS FIXED ^^^ !!!
 	local package_dir="${1%/*}"
 
 	[[ -z "$base_commit" ]] && {
@@ -495,12 +502,17 @@ lint_package() {
 						# Is it a tag tarball?
 						elif [[ "$ref_path" == archive/refs/tags/* ]]; then
 							tarball_type="Tag"
+						# Is it a branch tarball?
+						elif [[ "$ref_path" == archive/refs/heads/* ]]; then
+							tarball_type="Branch"
 						# Is it an untagged commit tarball?
 						elif [[ "$ref_path" =~ archive/[0-9a-f]{7,64} ]]; then
 							tarball_type="Commit"
 						# If it's in archive/ anyway then it's probably a tag with the incorrect download path.
 						elif [[ "$ref_path" == archive/* ]]; then
 							tarball_type="can-fix"
+							# Get the unexpanded version of the SRCURL for the suggestion
+							url="$(grep -oe "$protocol//$host/$user/$repo/archive.*" "$package_script")"
 							printf -v lint_msg '%s\n' \
 								"PARTIAL PASS - Tag with potential ref confusion." \
 								"WARNING: GitHub tarball URLs should use /archive/refs/tags/ instead of /archive/" \
@@ -551,16 +563,6 @@ lint_package() {
 						echo "PASS - (${tarball_type+"${tarball_type}/"}${protocol_type}) ${host}/${user}/${repo}"
 					;;
 				esac
-			# Additional debug output
-				# printf '%s\n' \
-				# 	"  URL: $url" \
-				# 	"PROTO: $protocol" \
-				# 	"   _: " \
-				# 	" HOST: $host" \
-				# 	" USER: $user" \
-				# 	" REPO: $repo" \
-				# 	" PATH: $ref_path"
-
 			done
 			unset i url protocol host user repo ref_path protocol_type tarball_type lint_msg
 
@@ -807,7 +809,7 @@ time_elapsed() {
 }
 
 echo "[INFO]: Starting build script linter ($(date -d "@$start_time" --utc '+%Y-%m-%dT%H:%M:%SZ' 2>&1))"
-echo "[INFO]: Base commit: $base_commit ($(git rev-parse "$base_commit"))"
+git -P log "$base_commit" -n1 --pretty=format:"[INFO]: Base commit    - %h%n[INFO]: Commit message - %s%n"
 echo "[INFO]: Origin URL: ${origin_url}"
 trap 'time_elapsed "$start_time"' EXIT
 

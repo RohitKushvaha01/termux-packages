@@ -2,21 +2,12 @@ TERMUX_PKG_HOMEPAGE=https://rust-lang.github.io/mdBook/
 TERMUX_PKG_DESCRIPTION="Creates book from markdown files"
 TERMUX_PKG_LICENSE="MPL-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="0.5.1"
+TERMUX_PKG_VERSION="0.5.2"
 TERMUX_PKG_SRCURL=https://github.com/rust-lang/mdBook/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=41a20de21e6a57942ec4e41b049babe8dac77b246a0549b87631cee0d2e75b2c
+TERMUX_PKG_SHA256=2c8615a17c5670f9aa6d8dbf77c343cf430f95f571f28a87bb7aaa8f29c1ac5b
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_UPDATE_VERSION_REGEXP="\d+\.\d+\.\d+$"
-
-termux_pkg_auto_update() {
-	local latest_tag
-	latest_tag="$(termux_github_api_get_tag "${TERMUX_PKG_SRCURL}" latest-regex "${TERMUX_PKG_UPDATE_VERSION_REGEXP}")"
-	if [[ -z "${latest_tag}" ]]; then
-		termux_error_exit "Unable to get tag from ${TERMUX_PKG_SRCURL}"
-	fi
-	termux_pkg_upgrade_version "${latest_tag}"
-}
 
 termux_step_make() {
 	termux_setup_rust

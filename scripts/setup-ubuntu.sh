@@ -262,9 +262,6 @@ PACKAGES+=" libxft-dev"
 PACKAGES+=" libxt-dev"
 PACKAGES+=" xbitmaps"
 
-# Needed by pypy
-PACKAGES+=" qemu-user-static"
-
 # Required by cava
 PACKAGES+=" xxd"
 
@@ -328,20 +325,11 @@ fi
 # Allow 32-bit packages.
 $SUDO dpkg --add-architecture i386
 
-$SUDO apt-get -yq update
-
 # Install jq first, then source properties.sh
 $SUDO env DEBIAN_FRONTEND=noninteractive \
-	apt-get install -yq --no-install-recommends $PACKAGES
+	apt-get install -yq --no-install-recommends jq
 
 . $(dirname "$(realpath "$0")")/properties.sh
-
-LLVM_PACKAGES=""
-
-# Needed by rust and other packages.
-LLVM_PACKAGES+=" llvm-${TERMUX_HOST_LLVM_MAJOR_VERSION}-dev"
-LLVM_PACKAGES+=" llvm-${TERMUX_HOST_LLVM_MAJOR_VERSION}-tools"
-LLVM_PACKAGES+=" clang-${TERMUX_HOST_LLVM_MAJOR_VERSION}"
 
 # Add apt.llvm.org repo to get newer LLVM than Ubuntu provided
 $SUDO cp $(dirname "$(realpath "$0")")/llvm-snapshot.gpg.key /etc/apt/trusted.gpg.d/apt.llvm.org.asc
@@ -350,10 +338,17 @@ $SUDO chmod a+r /etc/apt/trusted.gpg.d/apt.llvm.org.asc
 	echo "deb [arch=amd64] http://apt.llvm.org/noble/ llvm-toolchain-noble-${TERMUX_HOST_LLVM_MAJOR_VERSION} main"
 } | $SUDO tee /etc/apt/sources.list.d/apt-llvm-org.list > /dev/null
 
+LLVM_PACKAGES=""
+
+# Needed by rust and other packages.
+LLVM_PACKAGES+=" llvm-${TERMUX_HOST_LLVM_MAJOR_VERSION}-dev"
+LLVM_PACKAGES+=" llvm-${TERMUX_HOST_LLVM_MAJOR_VERSION}-tools"
+LLVM_PACKAGES+=" clang-${TERMUX_HOST_LLVM_MAJOR_VERSION}"
+
 $SUDO apt-get -yq update
 
 $SUDO env DEBIAN_FRONTEND=noninteractive \
-	apt-get install -yq --no-install-recommends $LLVM_PACKAGES
+	apt-get install -yq --no-install-recommends $PACKAGES $LLVM_PACKAGES
 
 $SUDO locale-gen --purge en_US.UTF-8
 echo -e 'LANG="en_US.UTF-8"\nLANGUAGE="en_US:en"\n' | $SUDO tee -a /etc/default/locale
@@ -365,7 +360,10 @@ $SUDO chown -R "$(whoami)" "$TERMUX__PREFIX"
 $SUDO mkdir -p "$TERMUX_APP__DATA_DIR"
 $SUDO chown -R "$(whoami)" "${TERMUX_APP__DATA_DIR%"${TERMUX_APP__DATA_DIR#/*/}"}" # Get `/path/` from `/path/to/app__data_dir`.
 
-$SUDO ln -sf /data/data/com.termux/files/usr/opt/aosp /system
+# Initial symbolic link in the symbolic link chain for packages
+# that have a build dependency on 'aosp-libs'; see scripts/build/termux_step_override_config_scripts.sh
+# and scripts/build/setup/termux_setup_proot.sh for more information
+$SUDO ln -sf "$TERMUX_APP__DATA_DIR/aosp" /system
 
 # Install newer pkg-config then what ubuntu provides, as the stock
 # ubuntu version has performance problems with at least protobuf:

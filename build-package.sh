@@ -209,6 +209,10 @@ source "$TERMUX_SCRIPTDIR/scripts/build/termux_extract_dep_info.sh"
 # shellcheck source=scripts/build/termux_download_deb_pac.sh
 source "$TERMUX_SCRIPTDIR/scripts/build/termux_download_deb_pac.sh"
 
+# Function that downloads and extracts multiple Ubuntu packages (using the termux_download function)
+# shellcheck source=scripts/build/termux_download_ubuntu_packages.sh
+source "$TERMUX_SCRIPTDIR/scripts/build/termux_download_ubuntu_packages.sh"
+
 # Script to download InRelease, verify it's signature and then download Packages.xz by hash
 # shellcheck source=scripts/build/termux_get_repo_files.sh
 source "$TERMUX_SCRIPTDIR/scripts/build/termux_get_repo_files.sh"
@@ -392,6 +396,10 @@ termux_step_post_massage() {
 # Function to create {pre,post}install, {pre,post}rm-scripts and similar
 # shellcheck source=scripts/build/termux_step_create_debscripts.sh
 source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_create_debscripts.sh"
+
+# Function to generate debscripts for python packages.
+# shellcheck source=scripts/build/termux_step_create_python_debscripts.sh
+source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_create_python_debscripts.sh"
 
 # Convert Debian maintainer scripts into pacman-compatible installation hooks.
 # This is used only when creating pacman packages.

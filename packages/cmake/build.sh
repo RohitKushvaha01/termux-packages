@@ -4,9 +4,9 @@ TERMUX_PKG_LICENSE="BSD 3-Clause"
 TERMUX_PKG_LICENSE_FILE="LICENSE.rst"
 TERMUX_PKG_MAINTAINER="@termux"
 # When updating version here, please update termux_setup_cmake.sh as well.
-TERMUX_PKG_VERSION="4.2.0"
+TERMUX_PKG_VERSION="4.2.1"
 TERMUX_PKG_SRCURL=https://www.cmake.org/files/v${TERMUX_PKG_VERSION:0:3}/cmake-${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=4104e94657d247c811cb29985405a360b78130b5d51e7f6daceb2447830bd579
+TERMUX_PKG_SHA256=414aacfac54ba0e78e64a018720b64ed6bfca14b587047b8b3489f407a14a070
 TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_DEPENDS="libarchive, libc++, libcurl, libexpat, jsoncpp, libuv, rhash, zlib"
 TERMUX_PKG_RECOMMENDS="clang, make"
@@ -47,6 +47,12 @@ termux_pkg_auto_update() {
 	local TERMUX_CMAKE_TARFILE=$(mktemp)
 	curl -Ls "${TERMUX_CMAKE_URL}" -o "${TERMUX_CMAKE_TARFILE}"
 	local TERMUX_CMAKE_SHA256=$(sha256sum "${TERMUX_CMAKE_TARFILE}" | cut -d" " -f1)
+
+	if [[ "${BUILD_PACKAGES}" == "false" ]]; then
+		echo "INFO: package needs to be updated to ${latest_version}."
+		return
+	fi
+
 	sed \
 		-e "s|local TERMUX_CMAKE_VERSION=.*|local TERMUX_CMAKE_VERSION=${latest_version}|" \
 		-e "s|local TERMUX_CMAKE_SHA256=.*|local TERMUX_CMAKE_SHA256=${TERMUX_CMAKE_SHA256}|" \

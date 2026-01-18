@@ -2,32 +2,15 @@ TERMUX_PKG_HOMEPAGE=https://www.vapoursynth.com/
 TERMUX_PKG_DESCRIPTION="Video processing framework with simplicity in mind"
 TERMUX_PKG_LICENSE="LGPL-2.1-or-later"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="72"
-TERMUX_PKG_REVISION=1
-TERMUX_PKG_SRCURL=https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=650f77feebfd08842b521273f59e0c88f7ba9d7cb5f151d89b79b8dfdd4ce633
+TERMUX_PKG_VERSION="73"
+TERMUX_PKG_SRCURL="https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R${TERMUX_PKG_VERSION}.tar.gz"
+TERMUX_PKG_SHA256=1bb8ffe31348eaf46d8f541b138f0136d10edaef0c130c1e5a13aa4a4b057280
 TERMUX_PKG_DEPENDS="libzimg, python"
 TERMUX_PKG_PYTHON_COMMON_DEPS="Cython"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS=" --disable-x86-asm"
 TERMUX_PKG_AUTO_UPDATE=true
-TERMUX_PKG_UPDATE_VERSION_REGEXP='\d{2}'
-
-termux_pkg_auto_update() {
-	local latest_release
-	latest_release="$(git ls-remote --tags https://github.com/vapoursynth/vapoursynth.git \
-	| grep -oP "refs/tags/R\K${TERMUX_PKG_UPDATE_VERSION_REGEXP}$" \
-	| sort -V \
-	| tail -n1)"
-
-	if [[ "${latest_release}" == "${TERMUX_PKG_VERSION}" ]]; then
-		echo "INFO: No update needed. Already at version '${TERMUX_PKG_VERSION}'."
-		return
-	fi
-
-	termux_pkg_upgrade_version "${latest_release}"
-}
-
+TERMUX_PKG_UPDATE_VERSION_REGEXP='R\K\d{2}$'
 
 termux_step_pre_configure() {
 	rm -f "$TERMUX_PKG_SRCDIR/setup.py"
